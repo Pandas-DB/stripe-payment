@@ -1,0 +1,68 @@
+# backend/serverless.yml
+service: usage-based-payments
+
+provider:
+  name: aws
+  runtime: python3.9
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  environment:
+    STRIPE_SECRET_KEY: ${ssm:/stripe/secret-key-${self:provider.stage}}
+    STRIPE_WEBHOOK_SECRET: ${ssm:/stripe/webhook-secret-${self:provider.stage}}
+    FRONTEND_URL: ${ssm:/frontend/url-${self:provider.stage}}
+    API_USAGE_TABLE: ${self:service}-api-usage-${self:provider.stage}
+    PAYMENTS_TABLE: ${self:service}-payments-${self:provider.stage}
+
+functions:
+  createCheckout:
+    handler: src/handlers/lambda_functions.create_checkout
+    events:
+      - http:
+          path: /checkout/create
+          method: post
+          authorizer: aws_iam
+  
+  stripeWebhook:
+    handler: src/handlers/lambda_functions.stripe_webhook
+    events:
+      - http:
+          path: /webhook/stripe
+          method: post
+
+resources:
+  Resources:
+    ApiUsageTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-api-usage-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: yearMonth
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: yearMonth
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+        TimeToLiveSpecification:
+          AttributeName: ttl
+          Enabled: true
+
+    PaymentsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:service}-payments-${self:provider.stage}
+        AttributeDefinitions:
+          - AttributeName: userId
+            AttributeType: S
+          - AttributeName: paymentId
+            AttributeType: S
+        KeySchema:
+          - AttributeName: userId
+            KeyType: HASH
+          - AttributeName: paymentId
+            KeyType: RANGE
+        BillingMode: PAY_PER_REQUEST
+
