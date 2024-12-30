@@ -109,6 +109,61 @@ npm run build
 
 ## Architecture
 
+Repo structure:
+
+usage-based-payments/
+├── .github/
+│   └── workflows/
+│       ├── test.yml
+│       └── deploy.yml
+├── backend/
+│   ├── src/
+│   │   ├── models/
+│   │   │   ├── __init__.py
+│   │   │   └── models.py
+│   │   ├── services/
+│   │   │   ├── __init__.py
+│   │   │   ├── usage_service.py
+│   │   │   ├── payment_service.py
+│   │   │   └── billing_service.py
+│   │   ├── handlers/
+│   │   │   ├── __init__.py
+│   │   │   └── lambda_functions.py
+│   │   └── config.py
+│   ├── tests/
+│   │   ├── __init__.py
+│   │   ├── test_usage_service.py
+│   │   ├── test_payment_service.py
+│   │   └── test_billing_service.py
+│   ├── requirements.txt
+│   ├── requirements-dev.txt
+│   └── serverless.yml
+├── frontend/
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── PricingTiers.tsx
+│   │   │   ├── UsageStats.tsx
+│   │   │   └── PaymentPage.tsx
+│   │   ├── services/
+│   │   │   └── api.ts
+│   │   ├── types/
+│   │   │   └── index.ts
+│   │   └── App.tsx
+│   ├── public/
+│   │   └── index.html
+│   ├── package.json
+│   └── tsconfig.json
+├── infrastructure/
+│   ├── dynamodb/
+│   │   ├── usage-table.yml
+│   │   └── payments-table.yml
+│   └── environment/
+│       ├── dev.yml
+│       └── prod.yml
+├── .gitignore
+├── LICENSE
+└── README.md
+
 ### Backend Components
 
 - **UsageService**: Manages API usage tracking
